@@ -4,15 +4,27 @@ const mongoose = require("mongoose");
 exports.get_debts = (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const perPage = parseInt(req.query.perPage) || 10;
+  const sort = req.query.sort || "desc";
+  const sortBy = req.query.sortBy || "relevant";
+  const search = req.query.search || "";
 
-  Debt.find()
+  // Constructing sort object
+  let sortObj = {};
+  if (sortBy === "relevant") sortObj = { done: 1, _id: -1 };
+  else if (sortBy) sortObj[sortBy] = sort === "asc" ? 1 : -1;
+
+  // Constructing search criteria
+  let searchCriteria = {};
+  if (search) searchCriteria = { name: new RegExp(search, "i") };
+
+  Debt.find(searchCriteria)
     .select("_id name done date description")
-    .sort({ done: 1, _id: -1 })
+    .sort(sortObj)
     .skip((page - 1) * perPage)
     .limit(perPage)
     .exec()
     .then((docs) => {
-      Debt.countDocuments().then((count) => {
+      Debt.countDocuments(searchCriteria).then((count) => {
         res.status(200).json({
           total: count,
           page,
