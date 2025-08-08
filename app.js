@@ -36,6 +36,7 @@ app.use((req, res, next) => {
 
 app.use("/debts", require("./api/routes/debts"));
 app.use("/users", require("./api/routes/users"));
+app.use("/ping", require("./api/routes/ping"));
 
 // --------------------------------------------- //
 
